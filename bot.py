@@ -329,6 +329,32 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif data == "CANCEL":
         await query.edit_message_text("নাম্বার নির্বাচন বাতিল করা হয়েছে।")
 
+    
+    elif data == "UI:login":
+        await query.message.reply_text("👉 ব্যবহার: /login <SID> <AUTH_TOKEN>")
+
+    elif data == "UI:buy":
+        await query.message.reply_text("👉 ব্যবহার: /buy_number <Area Code>")
+
+    elif data == "UI:messages":
+        await query.message.reply_text("👉 ব্যবহার: /show_messages")
+
+    elif data == "UI:delete":
+        await query.message.reply_text("👉 ব্যবহার: /delete_number")
+
+    elif data == "UI:mynumbers":
+        await query.message.reply_text("👉 ব্যবহার: /my_numbers")
+
+    elif data == "UI:subscribe":
+        keyboard = [
+            [InlineKeyboardButton("30 Minute - FREE", callback_data="PLAN:30m")],
+            [InlineKeyboardButton("1 Day - $2", callback_data="PLAN:1d")],
+            [InlineKeyboardButton("7 Day - $10", callback_data="PLAN:7d")],
+            [InlineKeyboardButton("15 Day - $15", callback_data="PLAN:15d")],
+            [InlineKeyboardButton("30 Day - $20", callback_data="PLAN:30d")],
+        ]
+        await query.message.reply_text("💳 নিচের প্ল্যান থেকে বেছে নিন:", reply_markup=InlineKeyboardMarkup(keyboard))
+
     elif data.startswith("PLAN:"):
         plan = data.split(":")[1]
         username = f"@{query.from_user.username}" if query.from_user.username else "N/A"
@@ -350,8 +376,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if plan in prices:
             _, label, cost = prices[plan]
             msg = (
-                f"Please send {cost} to Binance Pay ID: 469628989\n"
-                f"পেমেন্ট করার পর প্রুভ পাঠান Admin কে @Mr_Evan3490 \n\n"
+                f"Please send {cost} to Binance Pay ID: 905282228\n"
+                f"পেমেন্ট করার পর প্রুভ পাঠান Admin কে @Siyam_ahmmed \n\n"
                 f"User ID: {user_id}\nUsername: {username}\nPlan: {label} - {cost}"
             )
             await query.edit_message_text(msg)
