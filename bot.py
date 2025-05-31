@@ -9,8 +9,8 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 # Admin system
-ADMIN_IDS = [6734281256]
-user_permissions = {6734281256: float("inf")} 
+ADMIN_IDS = [6165060012]
+user_permissions = {6165060012: float("inf")}
 user_used_free_plan = set()
 
 # Twilio session
@@ -25,11 +25,11 @@ def permission_required(func):
         expire_time = user_permissions.get(user_id, 0)
         if time.time() > expire_time:
             keyboard = [
-                [InlineKeyboardButton("⏱️ 30 Min Access - Free", callback_data="PLAN:30m")],
-                [InlineKeyboardButton("📅 1 Day - $2", callback_data="PLAN:1d")],
-                [InlineKeyboardButton("🗓️ 7 Days - $10", callback_data="PLAN:7d")],
-                [InlineKeyboardButton("📆 15 Days - $15", callback_data="PLAN:15d")],
-                [InlineKeyboardButton("🗓️ 30 Days - $20", callback_data="PLAN:30d")],
+                [InlineKeyboardButton("30 Minute - $FREE", callback_data="PLAN:30m")],
+                [InlineKeyboardButton("1 Day - $2", callback_data="PLAN:1d")],
+                [InlineKeyboardButton("7 Day - $10", callback_data="PLAN:7d")],
+                [InlineKeyboardButton("15 Day - $15", callback_data="PLAN:15d")],
+                [InlineKeyboardButton("30 Day - $20", callback_data="PLAN:30d")],
             ]
             await (update.message or update.callback_query).reply_text(
                 "Bot এর Subscription কিনার জন্য নিচের বাটনে ক্লিক করুন:",
@@ -106,7 +106,7 @@ async def active_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(msg)
 
 # Twilio login
-@permission_required
+@siyam_ahmmed
 async def login(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if len(context.args) != 2:
         await update.message.reply_text("ব্যবহার: /login <SID> <AUTH_TOKEN>")
@@ -122,7 +122,7 @@ async def login(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"লগইন হয়নি আপনার Token নষ্ট হয়েছে 🥲")
 
 # Buy number
-@permission_required
+@siyam_ahmmed
 async def buy_number(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     client = user_clients.get(user_id)
@@ -157,7 +157,7 @@ async def buy_number(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # Show messages
-@permission_required
+@siyam_ahmmed
 async def show_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
     client = user_clients.get(update.effective_user.id)
     if not client:
@@ -176,7 +176,7 @@ async def show_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"সমস্যা: আপনার Token এ সমস্যা দয়া করে Token চেঞ্জ করুন")
 
 # Delete number
-@permission_required
+@siyam_ahmmed
 async def delete_number(update: Update, context: ContextTypes.DEFAULT_TYPE):
     client = user_clients.get(update.effective_user.id)
     if not client:
@@ -194,7 +194,7 @@ async def delete_number(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"ডিলিট হয়নি আপনার Token এ সমস্যা দয়া করে Token চেঞ্জ করুন ")
 
 # My numbers
-@permission_required
+@siyam_ahmmed
 async def my_numbers(update: Update, context: ContextTypes.DEFAULT_TYPE):
     client = user_clients.get(update.effective_user.id)
     if not client:
@@ -326,8 +326,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if plan in prices:
             _, label, cost = prices[plan]
             msg = (
-                f"Please send {cost} to Binance Pay ID: 469628989\n"
-                f"পেমেন্ট করার পর প্রুভ পাঠান Admin কে @Mr_Evan3490 \n\n"
+                f"Please send {cost} to Binance Pay ID: 905282228\n"
+                f"পেমেন্ট করার পর প্রুভ পাঠান Admin কে @siyam_ahmmed  \n\n"
                 f"User ID: {user_id}\nUsername: {username}\nPlan: {label} - {cost}"
             )
             await query.edit_message_text(msg)
@@ -356,15 +356,38 @@ def main():
 
 if __name__ == "__main__":
     main()
-# Command to manually grant free access to a chat ID
-async def grantfree(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id in ADMIN_IDS:
-        try:
-            chat_id = int(context.args[0])
-            user_permissions[chat_id] = float("inf")
-            await update.message.reply_text(f"✅ Access granted to {chat_id}.")
-        except Exception as e:
-            await update.message.reply_text("❌ Usage: /grantfree <chat_id>")
 
 
 
+from datetime import datetime, timedelta
+
+user_access = {}  # Dictionary to track access times
+
+@bot.message_handler(commands=['free'])
+def handle_free(message):
+    if str(message.from_user.id) != "6734281256":
+        bot.reply_to(message, "Unauthorized access.")
+        return
+
+    try:
+        _, user_id_str, duration_str = message.text.split()
+        user_id = int(user_id_str)
+        amount = int(duration_str[:-1])
+        unit = duration_str[-1]
+
+        if unit == 'h':
+            expiry = datetime.now() + timedelta(hours=amount)
+        elif unit == 'd':
+            expiry = datetime.now() + timedelta(days=amount)
+        elif unit == 'm':
+            expiry = datetime.now() + timedelta(minutes=amount)
+        elif unit == 'o':  # 'mo' interpreted as '1mo' -> '1o'
+            expiry = datetime.now() + timedelta(days=30 * amount)
+        else:
+            bot.reply_to(message, "Invalid duration format. Use h/d/m/mo.")
+            return
+
+        user_access[user_id] = expiry
+        bot.reply_to(message, f"User {user_id} granted free access until {expiry}.")
+    except Exception as e:
+        bot.reply_to(message, f"Error: {e}\nUse format: /free <chat_id> <duration>, e.g., /free 123456 1d")
